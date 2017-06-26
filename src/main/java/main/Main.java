@@ -10,17 +10,21 @@ import spark.ModelAndView;
 import spark.Session;
 import spark.template.freemarker.FreeMarkerEngine;
 
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static j2html.TagCreator.p;
 import static spark.Spark.*;
 import static spark.debug.DebugScreen.enableDebugScreen;
 
 //TODO: Teminar de arreglar el main
 public class Main {
     public static int pa = 0;
+    public static List<org.eclipse.jetty.websocket.api.Session> usuariosConectados = new ArrayList<>();
 
     public static void main(String [] args)
     {
@@ -30,6 +34,9 @@ public class Main {
         Configuration configuration = new Configuration();
         configuration.setClassForTemplateLoading(Main.class, "/templates");
         FreeMarkerEngine freeMarkerEngine = new FreeMarkerEngine( configuration );
+
+        webSocket("/mensajeServidor", WebSocketClass.class);
+        init();
 
         //Administradores
         //UsuarioQueries.getInstancia().crear(new Usuario("f", "Francis Cáceres", "1234", true));
@@ -496,6 +503,16 @@ public class Main {
             return null;
         });
 
+
+        /**
+         * http://localhost:4567/enviarMensaje?mensaje=Hola Mundo
+         */
+        get("/enviarMensaje",(request, response) ->{
+            String mensaje = request.queryParams("mensaje");
+            enviarMensajeAClientesConectados(mensaje, "rojo");
+            return "Enviando mensaje: "+mensaje;
+        });
+
     }
 
     public static List<Articulo> paginacion(List<Articulo> la, int pagina)
@@ -518,6 +535,16 @@ public class Main {
     public static void limpiaEtiq(List<Etiqueta> le) {
         for(Etiqueta e : le) {
             EtiquetaQueries.getInstancia().eliminar(e.getId());
+        }
+    }
+
+    public static void enviarMensajeAClientesConectados(String mensaje, String color){
+        for(org.eclipse.jetty.websocket.api.Session sesionConectada : usuariosConectados){
+            try {
+                sesionConectada.getRemote().sendString(p(mensaje).withClass(color).render());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 

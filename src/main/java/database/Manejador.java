@@ -67,7 +67,6 @@ public class Manejador<T> {
 
     public T find(Object id){
         EntityManager em = getEntityManager();
-
         try {
             return em.find(claseEntidad,id);
         }catch (Exception e){
