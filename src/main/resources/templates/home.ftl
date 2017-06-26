@@ -131,7 +131,7 @@
             <#if EtiqNotFound??>
                 <h3>Etiqueta no encontrada</h3>
             </#if>
-
+            <div id="area-articulos">
             <#if articulos??>
                 <!-- First Blog Post -->
               <#list articulos as articulo>
@@ -148,7 +148,7 @@
                     <hr>
                 </#list>
             </#if>
-
+            </div>
     </div>
     <!-- /.row -->
 
@@ -174,21 +174,16 @@
 
     <!-- Footer -->
     <footer>
-        <div class="row">
+        <div class="row" id="page-index">
             <div class="col-lg-12">
                 <#if paginas??>
 
                         <paginaanterior></paginaanterior>
                         <#list paginas as pagina>
-                            <#if pagina == 1>
-                                <a href="/">${pagina} </a>
+                            <#if pagina == 0>
+                                <a href="#"  class="pagination">1 </a>
                             <#else>
-                                <#if pagina == 0>
-                                    <empty > </empty>
-                                <#else>
-                                    <a href="/page/${pagina}">${pagina} </a>
-                                </#if>
-
+                                <a href="#"  class="pagination">${pagina} </a>
                             </#if>
                         </#list>
                         <paginasgt></paginasgt>
@@ -203,7 +198,60 @@
 
 </div>
 <!-- /.container -->
+    <script>
+        $(".pagination").click(function () {
+//            alert($(this).html());
+            $.ajax({
+                type: 'POST',
+                url: "/page/"+$(this).html(),
+                dataType: 'json',
+                success: function(data) {
+//                    alert("succes");
+                    var articulos = [];
+//                    console.log(Object.keys(data));
 
+                    data.datos.forEach(function(element) {
+
+                        var datos = element.toString().split("/");
+//                        console.log(datos);
+                        var tmp = {id: datos[0], titulo: datos[1], autor: datos[2], cuerpo: datos[3], fecha: datos[4]};
+                        articulos.push(tmp);
+                    });
+
+                    page = "";
+                    indices = '<paginaanterior></paginaanterior><p>'+
+                            '<div class="col-lg-12">';
+                    articulos.forEach(function (articulo) {
+                        page += '<h2><a href=/articulos?id='+articulo.id+'>"'+articulo.titulo+'"</a></h2><p class="lead">'+
+                                'by <i>'+articulo.autor+'</i>'+
+                                '</p> <p><span class="glyphicon glyphicon-time"></span> Publicado en '+articulo.fecha+'</p>'+
+                                '<hr>'+
+                                '<p class="parrafoEsp">'+articulo.cuerpo.substring(0,69)+'</p>'+
+                                '<a class="btn btn-primary" href="/articulos?id='+articulo.id+'">Leer más <span class="glyphicon glyphicon-chevron-right"></span></a>'+
+                                '<hr>';
+                    });
+                    page += '<br>';
+
+                    data.paginas.forEach(function(pagina){
+                        indices += '<a href="#"  class="pagination">'+pagina+'</a>';
+                    });
+
+                    indices +='</p><paginasgt></paginasgt>'+
+                            '<p>Copyright &copy; Francis y Jesus 2017</p>'+
+                    '</div>';
+                    document.getElementById("area-articulos").innerHTML = page;
+//                    document.getElementById("page-index").innerHTML = indices;
+
+                },
+                error: function(err) {
+                    alert("fail");
+                    console.log(Object.keys(err));
+                    console.log(err.responseText);
+                }
+            });
+        });
+
+    </script>
 </body>
 
 </html>

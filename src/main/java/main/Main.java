@@ -3,6 +3,7 @@ package main;
  * Created by Francis Cáceres on 3/6/2017.
  */
 
+import com.google.gson.Gson;
 import database.*;
 import freemarker.template.Configuration;
 import modelo.*;
@@ -189,6 +190,35 @@ public class Main {
             attributes.put("paginas",paginas);
             return new ModelAndView(attributes, "page.ftl");
         }, freeMarkerEngine);
+
+        Gson gson = new Gson();
+        post("/page/:pagina", (request, response) -> {
+            Map<String, Object> attributes = new HashMap<>();
+
+            int pagina = Integer.valueOf(request.params("pagina"));
+
+            pa = 5 * (pagina-1);
+            List<Articulo>articulos = ArticulosQueries.getInstancia().findLimitedSorted();
+            List<String> arts = new ArrayList<>();
+            for (Articulo a:articulos) {
+                String tmp = a.getAutor()+"/"+a.getTitulo()+"/"+a.getAutor().getUsername()+"/"+a.getCuerpo()+"/"+a.getFecha().toString();
+                arts.add(tmp);
+            }
+            pa = 0;
+
+            int [] paginas = new int [(int)getCantPag(ArticulosQueries.getInstancia().findAllSorted().size())];
+            for(int i = 1 ;i <= paginas.length;i++)
+            {
+                if(pagina == i)
+                    continue;
+                paginas[i-1]= i;
+            }
+
+            DatosArticulos resultado = new DatosArticulos();
+            resultado.setDatos(arts);
+            resultado.setPaginas(paginas);
+            return resultado;
+        }, gson::toJson);
 
         get("tags/:tag/page/:pagina", (request, response) -> {
 
