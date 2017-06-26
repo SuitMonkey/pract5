@@ -65,6 +65,7 @@
             conectar();
 
             $("#enviarChat").click(function(){
+                $("#mensajeServidor").append($("#areaChat").val());
                 webSocket.send($("#areaChat").val());
             });
         });
@@ -75,7 +76,7 @@
          */
         function recibirInformacionServidor(mensaje){
             console.log("Recibiendo del servidor: "+mensaje.data)
-            $("#mensajeServidor").append(mensaje.data);
+            $("#mensajeServidor").append("Jefe: "+mensaje.data);
         }
 
         function conectar() {
@@ -164,7 +165,7 @@
             <h1>Creando Articulo</h1><br>
             <div class="form-group">
                 <input type="text" name="Nombre" class="form-control" placeholder="Nombre del pana" readonly>
-                <textarea type="text-area" style="height: 150px;" class="form-control" row="4" name="mensajes" placeholder="Muchos mensajes..."></textarea>
+                <textarea type="text-area" style="height: 150px;" class="form-control" row="4" id="mensajeServidor" placeholder="Muchos mensajes..."></textarea>
             </div>
             <div class="input-group">
                 <input type="text" class="form-control" style="height: 34px" id="areaChat">
