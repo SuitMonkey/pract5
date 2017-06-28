@@ -60,6 +60,63 @@
         });
 
     </script>
+
+    <script>
+        //abriendo el objeto para el websocket
+        var webSocket;
+        var tiempoReconectar = 5000;
+
+        $(document).ready(function(){
+
+            $("#botChat").click(function(){
+                if(!webSocket || webSocket.readyState == 3){
+                    console.log("Entro a conexion.")
+                    conectar();
+                }
+                $("#Nombre").val($("#nomChat").val());
+                setInterval(verificarConexion, tiempoReconectar); //para reconectar.
+            });
+//            conectar();
+
+            $("#enviarChat").click(function(){
+                $("#mensajeServidor").val($("#mensajeServidor").val()+"Tu: "+$("#areaChat").val()+"\n");
+                webSocket.send($("#nomChat").val()+"/"+$("#areaChat").val());
+                $("#areaChat").val("");
+            });
+        });
+
+        /**
+         *
+         * @param mensaje
+         */
+        function recibirInformacionServidor(mensaje){
+            console.log("Recibiendo del servidor: "+mensaje.data)
+            $("#mensajeServidor").val($("#mensajeServidor").val()+"Jefe: "+mensaje.data+"\n");
+        }
+
+        function conectar() {
+            console.log("Creando el Websocket");
+            webSocket = new WebSocket("ws://" + location.hostname + ":" + location.port + "/mensajeServidor");
+
+            //indicando los eventos:
+            webSocket.onmessage = function(data){recibirInformacionServidor(data);};
+            webSocket.onopen  = function(e){ console.log("Conectado - status "+this.readyState); };
+            webSocket.onclose = function(e){
+                console.log("Desconectado - status "+this.readyState);
+            };
+        }
+
+        function verificarConexion(){
+            if(!webSocket || webSocket.readyState == 3){
+                console.log("Entro a Verificar conexion.")
+                conectar();
+            }
+        }
+
+
+
+    </script>
+
     <!-- Bootstrap Core JavaScript -->
     <script src="js/bootstrap.min.js"></script>
 
@@ -227,6 +284,24 @@
                 </div>
             </div>
 
+            <div class="modal fade" id="chat-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
+                <div class="modal-dialog">
+                    <div class="loginmodal-container col-lg-8">
+                        <h1>Creando Articulo</h1><br>
+                        <div class="form-group">
+                            <input type="text" id="Nombre" class="form-control" placeholder="Nombre del pana" readonly>
+                            <textarea type="text-area" style="height: 150px;" class="form-control" row="4" id="mensajeServidor" placeholder="Muchos mensajes..." readonly></textarea>
+                        </div>
+                        <div class="input-group">
+                            <input type="text" class="form-control" style="height: 34px" id="areaChat">
+                            <span class="input-group-btn">
+                                <button type="submit" id="enviarChat" class="btn btn-primary" style="bottom: 5px"><span class="glyphicon glyphicon-bell"></span> </button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         <!-- Comment -->
         <div class="well">
         <#list comentarios as coment>
@@ -310,6 +385,19 @@
                 </div>
                 <!-- /.row -->
             </div>
+
+            <div class="well">
+                <h4>Chat con Admin o Author</h4>
+                <div class="input-group">
+                    <input type="text" class="form-control" id="nomChat" placeholder="Nombre">
+                    <span class="input-group-btn">
+                        <button class="btn btn-default" type="submit" data-toggle="modal" data-target="#chat-modal" id="botChat">
+                            <span class="glyphicon glyphicon-heart"></span>
+                        </button>
+                    </span>
+                </div>
+            </div>
+
         </div>
 
     </div>

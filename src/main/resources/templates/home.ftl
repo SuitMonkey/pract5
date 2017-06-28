@@ -37,12 +37,14 @@
         $(document).ready( function (){
             var variable = "${sesion}";
             $('#administrar').hide();
+            $('#chatt').hide();
 
             if(variable ==="true") {
 
                 $('.login').hide();
                 $('.logout').show();
                 $('.agregarArt').show();
+                $('#chatt').show();
                 if("${user.isAdministrador()?c}" === "true") {
                     $('#administrar').show();
                 }
@@ -62,11 +64,20 @@
 
         $(document).ready(function(){
 
-            conectar();
+            $("#botChat").click(function(){
+                if(!webSocket || webSocket.readyState == 3){
+                    console.log("Entro a conexion.")
+                    conectar();
+                }
+                $("#Nombre").val($("#nomChat").val());
+                setInterval(verificarConexion, tiempoReconectar); //para reconectar.
+            });
+//            conectar();
 
             $("#enviarChat").click(function(){
-                $("#mensajeServidor").append($("#areaChat").val());
-                webSocket.send($("#areaChat").val());
+                $("#mensajeServidor").val($("#mensajeServidor").val()+"Tu: "+$("#areaChat").val()+"\n");
+                webSocket.send($("#nomChat").val()+"/"+$("#areaChat").val());
+                $("#areaChat").val("");
             });
         });
 
@@ -76,10 +87,11 @@
          */
         function recibirInformacionServidor(mensaje){
             console.log("Recibiendo del servidor: "+mensaje.data)
-            $("#mensajeServidor").append("Jefe: "+mensaje.data);
+            $("#mensajeServidor").val($("#mensajeServidor").val()+"Jefe: "+mensaje.data+"\n");
         }
 
         function conectar() {
+            console.log("Creando el Websocket");
             webSocket = new WebSocket("ws://" + location.hostname + ":" + location.port + "/mensajeServidor");
 
             //indicando los eventos:
@@ -92,11 +104,12 @@
 
         function verificarConexion(){
             if(!webSocket || webSocket.readyState == 3){
+                console.log("Entro a Verificar conexion.")
                 conectar();
             }
         }
 
-        setInterval(verificarConexion, tiempoReconectar); //para reconectar.
+
 
     </script>
 
@@ -122,6 +135,9 @@
             <ul class="nav navbar-nav navbar-right">
                 <li class = "agregarArt">
                     <a href="#" data-toggle="modal" data-target="#login-modal"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Articulo</a>
+                </li>
+                <li class = "chatss">
+                    <div class="btn-nav"><a href="/chatRoom" class="btn btn-primary navbar-btn" id="chatt">chat</a></div>
                 </li>
                 <li class="login">
                     <div class="btn-nav"><a class="btn btn-default navbar-btn " id="button_login"  href="/login"> Entrar</a></div>
@@ -164,8 +180,8 @@
         <div class="loginmodal-container col-lg-8">
             <h1>Creando Articulo</h1><br>
             <div class="form-group">
-                <input type="text" name="Nombre" class="form-control" placeholder="Nombre del pana" readonly>
-                <textarea type="text-area" style="height: 150px;" class="form-control" row="4" id="mensajeServidor" placeholder="Muchos mensajes..."></textarea>
+                <input type="text" id="Nombre" class="form-control" placeholder="Nombre del pana" readonly>
+                <textarea type="text-area" style="height: 150px;" class="form-control" row="4" id="mensajeServidor" placeholder="Muchos mensajes..." readonly></textarea>
             </div>
             <div class="input-group">
                 <input type="text" class="form-control" style="height: 34px" id="areaChat">
