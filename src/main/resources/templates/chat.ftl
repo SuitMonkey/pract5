@@ -32,29 +32,6 @@
     <!-- Bootstrap Core JavaScript -->
     <script src="js/bootstrap.min.js"></script>
 
-<#--Codigo Hecho a mano-->
-    <#--<script type="text/javascript">-->
-        <#--$(document).ready( function (){-->
-            <#--var variable = "${sesion}";-->
-            <#--$('#administrar').hide();-->
-
-            <#--if(variable ==="true") {-->
-
-                <#--$('.login').hide();-->
-                <#--$('.logout').show();-->
-                <#--$('.agregarArt').show();-->
-                <#--if("${user.isAdministrador()?c}" === "true") {-->
-                    <#--$('#administrar').show();-->
-                <#--}-->
-            <#--}-->
-            <#--else {-->
-                <#--$('.login').show();-->
-                <#--$('.logout').hide();-->
-
-                <#--$('.agregarArt').hide();-->
-            <#--}-->
-        <#--});-->
-    <#--</script>-->
     <script type="text/javascript">
         $(document).ready( function (){
             var variable = "${sesion}";
@@ -85,7 +62,10 @@
 
         $(document).ready(function(){
 
-            conectar();
+            if(!webSocket || webSocket.readyState == 3){
+                console.log("Entro a Verificar conexion.")
+                conectar();
+            }
 //            if(crearAutor){
 //                webSocket.send("adminAutor");
 //                crearAutor = true;
